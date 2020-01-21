@@ -6,11 +6,9 @@ import java.time.LocalDateTime;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 
 import br.com.dockApi.person.Person;
@@ -22,8 +20,7 @@ public class Account {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long accountId;
 
-	@OneToOne(fetch = FetchType.LAZY)
-	@MapsId
+	@OneToOne
 	private Person person;
 
 	@Enumerated(EnumType.STRING)

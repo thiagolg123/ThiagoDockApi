@@ -5,12 +5,15 @@ import java.net.URI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import br.com.dockApi.excpetion.DepositException;
 import br.com.dockApi.person.PersonRepository;
 
 /**
@@ -41,8 +44,7 @@ public class AccountControllerV1 {
 	 */
 	@PostMapping
 	public ResponseEntity<AccountDTO> createAccount(@RequestBody AccountForm accForm, UriComponentsBuilder uriBuilder) {
-		// convert form to model
-		Account account = accForm.convert(repoPerson);
+		Account account = accForm.convertCreateAccount(repoPerson);
 
 		if (repoAccount.existsByPersonCpf(account.getPerson().getCpf())) {
 			return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -52,5 +54,26 @@ public class AccountControllerV1 {
 		AccountDTO accDto = new AccountDTO(account);
 		URI uri = uriBuilder.path(V1_ACCOUNT_PARAM_ID).buildAndExpand(accDto.getAccountId()).toUri();
 		return ResponseEntity.created(uri).body(accDto);
+	}
+
+	/**
+	 * Deposit a value in account
+	 * 
+	 * @param accForm
+	 * @param uriBuilder
+	 * @return
+	 */
+	@PutMapping("/deposit/{id}")
+	public ResponseEntity<AccountDTO> accountDeposit(@PathVariable Long id,
+			@RequestBody RefreshAccountForm refreshAccForm) {
+
+		try {
+			// TODO metodos dos form ficariam melhores em services
+			Account account = refreshAccForm.deposit(id, repoAccount);
+			return ResponseEntity.ok(new AccountDTO(account));
+		} catch (DepositException e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
 	}
 }

@@ -61,8 +61,20 @@ public class AccountForm {
 		this.personCpf = personCpf;
 	}
 
-	public Account convert(PersonRepository repoPerson) {
+	/**
+	 * Convert form to model, adding a person by cpf
+	 * 
+	 * @param PersonRepository repoPerson
+	 * @return Model filled
+	 */
+	public Account convertCreateAccount(PersonRepository repoPerson) {
 		Person person = repoPerson.findByCpf(personCpf);
+		// TODO - tratar nao achou pessoa
 		return new Account(person, accountType, balance, dailyWithdrawalLimit, activeFlag);
+	}
+
+	public Account convertToDeposit(AccountRepository repoAccount) {
+		Account account = repoAccount.findByPersonCpf(personCpf);
+		return account;
 	}
 }
