@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.dockApi.excpetion.DepositException;
+import br.com.dockApi.excpetion.InactiveAccountException;
 import br.com.dockApi.excpetion.UnregisteredAccount;
 import br.com.dockApi.excpetion.UnregisteredPerson;
 import br.com.dockApi.person.Person;
@@ -45,30 +46,44 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public Account deposit(Long idAccount, BigDecimal valueDeposit) throws DepositException {
+	public Account deposit(Long idAccount, BigDecimal valueDeposit) throws InactiveAccountException, DepositException {
 		Optional<Account> accountRefresh = repoAccount.findById(idAccount);
 		Account account = accountRefresh.isPresent() ? accountRefresh.get() : null;
+		AccountDTO accountDTO = new AccountDTO(account);
+
 		if (valueDeposit == null || valueDeposit.compareTo(BigDecimal.ONE) == LESS_THAN) {
 			throw new DepositException("Deposit value less than limit");
 		}
 
-		if (account != null && account.isActiveFlag()) {
+		if (verifyAccountActive(accountDTO)) {
 			BigDecimal newBalance = account.getBalance().add(valueDeposit);
 			account.setBalance(newBalance);
 			repoAccount.flush();
 			return account;
 		}
-		throw new DepositException("Inactive account");
+		throw new InactiveAccountException("Inactive account");
+
 	}
 
 	@Override
-	public AccountDTO consultBalance(Long id) throws UnregisteredAccount {
+	public AccountDTO consultBalance(Long id) throws UnregisteredAccount, InactiveAccountException {
 		Optional<Account> account = repoAccount.findById(id);
-		if (account.isPresent()) {
-			AccountDTO accountDto = new AccountDTO(account.get());
+		if (!account.isPresent()) {
+			throw new UnregisteredAccount("Account not find");
+		}
+
+		AccountDTO accountDto = new AccountDTO(account.get());
+
+		if (verifyAccountActive(accountDto)) {
 			return accountDto;
 		}
-		throw new UnregisteredAccount("Account not find");
+
+		throw new InactiveAccountException("Inactive account");
+	}
+
+	@Override
+	public boolean verifyAccountActive(AccountDTO accDto) {
+		return accDto != null && accDto.isActiveFlag();
 	}
 
 }

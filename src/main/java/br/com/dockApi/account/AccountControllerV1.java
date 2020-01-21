@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.dockApi.excpetion.DepositException;
+import br.com.dockApi.excpetion.InactiveAccountException;
 import br.com.dockApi.excpetion.RegisteredAccount;
 import br.com.dockApi.excpetion.UnregisteredAccount;
 import br.com.dockApi.excpetion.UnregisteredPerson;
@@ -79,7 +80,7 @@ public class AccountControllerV1 {
 			AccountDTO accountDTO = new AccountDTO(account);
 			transactionService.recordTransaction(accountDTO, valueDeposit, TransactionType.DEPOSIT);
 			return ResponseEntity.ok(accountDTO);
-		} catch (DepositException e) {
+		} catch (DepositException | InactiveAccountException e) {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
@@ -90,7 +91,7 @@ public class AccountControllerV1 {
 		AccountDTO accountDTO = null;
 		try {
 			accountDTO = accountService.consultBalance(id);
-		} catch (UnregisteredAccount e) {
+		} catch (UnregisteredAccount | InactiveAccountException e) {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
