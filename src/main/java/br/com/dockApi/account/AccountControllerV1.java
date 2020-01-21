@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.dockApi.excpetion.DepositException;
-import br.com.dockApi.person.PersonRepository;
+import br.com.dockApi.excpetion.RegisteredAccount;
+import br.com.dockApi.excpetion.UnregisteredPerson;
 
 /**
  * Controller of account resources
@@ -23,17 +24,13 @@ import br.com.dockApi.person.PersonRepository;
  *
  */
 @RestController
-
 @RequestMapping("/v1/account")
 public class AccountControllerV1 {
 
 	private static final String V1_ACCOUNT_PARAM_ID = "/v1/account/{id}";
 
 	@Autowired
-	private AccountRepository repoAccount;
-
-	@Autowired
-	private PersonRepository repoPerson;
+	private AccountService accountService;
 
 	/**
 	 * Create an account if there is a person
@@ -44,14 +41,15 @@ public class AccountControllerV1 {
 	 */
 	@PostMapping
 	public ResponseEntity<AccountDTO> createAccount(@RequestBody AccountForm accForm, UriComponentsBuilder uriBuilder) {
-		Account account = accForm.convertCreateAccount(repoPerson);
-
-		if (repoAccount.existsByPersonCpf(account.getPerson().getCpf())) {
-			return ResponseEntity.status(HttpStatus.CONFLICT).build();
+		AccountDTO accDto = null;
+		try {
+			accDto = accountService.createAccount(accForm);
+			accountService.existsAccount(accDto);
+		} catch (UnregisteredPerson | RegisteredAccount e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
 
-		repoAccount.save(account);
-		AccountDTO accDto = new AccountDTO(account);
 		URI uri = uriBuilder.path(V1_ACCOUNT_PARAM_ID).buildAndExpand(accDto.getAccountId()).toUri();
 		return ResponseEntity.created(uri).body(accDto);
 	}
@@ -68,8 +66,7 @@ public class AccountControllerV1 {
 			@RequestBody RefreshAccountForm refreshAccForm) {
 
 		try {
-			// TODO metodos dos form ficariam melhores em services
-			Account account = refreshAccForm.deposit(id, repoAccount);
+			Account account = accountService.deposit(id, refreshAccForm.getBalance());
 			return ResponseEntity.ok(new AccountDTO(account));
 		} catch (DepositException e) {
 			e.printStackTrace();
