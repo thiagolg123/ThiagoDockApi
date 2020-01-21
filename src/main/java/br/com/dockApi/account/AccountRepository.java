@@ -12,6 +12,4 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 	 */
 	boolean existsByPersonCpf(String cpf);
 
-	Account findByPersonCpf(String personCpf);
-
 }

@@ -1,10 +1,12 @@
 package br.com.dockApi.account;
 
+import java.math.BigDecimal;
 import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,7 +17,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import br.com.dockApi.excpetion.DepositException;
 import br.com.dockApi.excpetion.RegisteredAccount;
+import br.com.dockApi.excpetion.UnregisteredAccount;
 import br.com.dockApi.excpetion.UnregisteredPerson;
+import br.com.dockApi.transaction.TransactionService;
+import br.com.dockApi.transaction.TransactionType;
 
 /**
  * Controller of account resources
@@ -31,6 +36,9 @@ public class AccountControllerV1 {
 
 	@Autowired
 	private AccountService accountService;
+
+	@Autowired
+	private TransactionService transactionService;
 
 	/**
 	 * Create an account if there is a person
@@ -63,14 +71,36 @@ public class AccountControllerV1 {
 	 */
 	@PutMapping("/deposit/{id}")
 	public ResponseEntity<AccountDTO> accountDeposit(@PathVariable Long id,
-			@RequestBody RefreshAccountForm refreshAccForm) {
+			@RequestBody ControllAccountBalanceForm refreshAccForm) {
 
 		try {
-			Account account = accountService.deposit(id, refreshAccForm.getBalance());
-			return ResponseEntity.ok(new AccountDTO(account));
+			BigDecimal valueDeposit = refreshAccForm.getValueDeposit();
+			Account account = accountService.deposit(id, valueDeposit);
+			AccountDTO accountDTO = new AccountDTO(account);
+			transactionService.recordTransaction(accountDTO, valueDeposit, TransactionType.DEPOSIT);
+			return ResponseEntity.ok(accountDTO);
 		} catch (DepositException e) {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
 	}
+
+	@GetMapping("/balance/{id}")
+	public ResponseEntity<BigDecimal> accountBalance(@PathVariable Long id) {
+		AccountDTO accountDTO = null;
+		try {
+			accountDTO = accountService.consultBalance(id);
+		} catch (UnregisteredAccount e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
+		return ResponseEntity.ok(accountDTO.getBalance());
+
+	}
+
+	// TODO * Implementar path que realiza operação de saque em uma conta;
+
+	// TODO * Implementar path que realiza o bloqueio de uma conta;
+
+	// TODO * Implementar path que recupera o extrato de transações de uma conta;
 }

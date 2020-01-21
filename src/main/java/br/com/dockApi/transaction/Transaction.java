@@ -4,12 +4,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
-
-import br.com.dockApi.account.Account;
 
 @Entity
 public class Transaction {
@@ -17,10 +16,20 @@ public class Transaction {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long transactionId;
-	@OneToOne
-	private Account fromAccount;
+	@Enumerated(EnumType.STRING)
+	private TransactionType transactionType;
+
+	private Long accountId;
 	private BigDecimal transactionValue;
-	private LocalDateTime dataCriacao = LocalDateTime.now();
+	private LocalDateTime transactionDate;
+
+	public TransactionType getTransactionType() {
+		return transactionType;
+	}
+
+	public void setTransactionType(TransactionType transactionType) {
+		this.transactionType = transactionType;
+	}
 
 	public Long getTransactionId() {
 		return transactionId;
@@ -30,12 +39,12 @@ public class Transaction {
 		this.transactionId = transactionId;
 	}
 
-	public Account getFromAccount() {
-		return fromAccount;
+	public Long getAccountId() {
+		return accountId;
 	}
 
-	public void setFromAccount(Account fromAccount) {
-		this.fromAccount = fromAccount;
+	public void setAccountId(Long accountId) {
+		this.accountId = accountId;
 	}
 
 	public BigDecimal getTransactionValue() {
@@ -46,12 +55,11 @@ public class Transaction {
 		this.transactionValue = transactionValue;
 	}
 
-	public LocalDateTime getDataCriacao() {
-		return dataCriacao;
+	public LocalDateTime getTransactionDate() {
+		return transactionDate;
 	}
 
-	public void setDataCriacao(LocalDateTime dataCriacao) {
-		this.dataCriacao = dataCriacao;
+	public void setTransactionDate(LocalDateTime transactionDate) {
+		this.transactionDate = transactionDate;
 	}
-
 }

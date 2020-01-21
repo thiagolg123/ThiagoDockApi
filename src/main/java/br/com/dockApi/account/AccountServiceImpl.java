@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.dockApi.excpetion.DepositException;
+import br.com.dockApi.excpetion.UnregisteredAccount;
 import br.com.dockApi.excpetion.UnregisteredPerson;
 import br.com.dockApi.person.Person;
 import br.com.dockApi.person.PersonRepository;
@@ -33,8 +34,8 @@ public class AccountServiceImpl implements AccountService {
 
 		Account account = new Account(person, accForm.getAccountType(), accForm.getBalance(),
 				accForm.getDailyWithdrawalLimit(), accForm.isActiveFlag());
-		repoAccount.save(account);
 
+		repoAccount.save(account);
 		return new AccountDTO(account);
 	}
 
@@ -47,7 +48,7 @@ public class AccountServiceImpl implements AccountService {
 	public Account deposit(Long idAccount, BigDecimal valueDeposit) throws DepositException {
 		Optional<Account> accountRefresh = repoAccount.findById(idAccount);
 		Account account = accountRefresh.isPresent() ? accountRefresh.get() : null;
-		if (valueDeposit.compareTo(BigDecimal.ONE) == LESS_THAN) {
+		if (valueDeposit == null || valueDeposit.compareTo(BigDecimal.ONE) == LESS_THAN) {
 			throw new DepositException("Deposit value less than limit");
 		}
 
@@ -58,6 +59,16 @@ public class AccountServiceImpl implements AccountService {
 			return account;
 		}
 		throw new DepositException("Inactive account");
+	}
+
+	@Override
+	public AccountDTO consultBalance(Long id) throws UnregisteredAccount {
+		Optional<Account> account = repoAccount.findById(id);
+		if (account.isPresent()) {
+			AccountDTO accountDto = new AccountDTO(account.get());
+			return accountDto;
+		}
+		throw new UnregisteredAccount("Account not find");
 	}
 
 }

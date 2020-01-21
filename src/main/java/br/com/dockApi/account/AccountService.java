@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import br.com.dockApi.excpetion.DepositException;
 import br.com.dockApi.excpetion.RegisteredAccount;
+import br.com.dockApi.excpetion.UnregisteredAccount;
 import br.com.dockApi.excpetion.UnregisteredPerson;
 
 public interface AccountService {
@@ -31,5 +32,13 @@ public interface AccountService {
 	 * @param id account
 	 * @return an account refreshed
 	 */
-	public Account deposit(Long idAccount, BigDecimal balance) throws DepositException;
+	public Account deposit(Long idAccount, BigDecimal value) throws DepositException;
+
+	/**
+	 * Consult balance in account by id
+	 * 
+	 * @param id
+	 * @return AccountDTO
+	 */
+	public AccountDTO consultBalance(Long id) throws UnregisteredAccount;
 }
