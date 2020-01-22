@@ -7,6 +7,7 @@ import br.com.dockApi.excpetion.InactiveAccountException;
 import br.com.dockApi.excpetion.RegisteredAccount;
 import br.com.dockApi.excpetion.UnregisteredAccount;
 import br.com.dockApi.excpetion.UnregisteredPerson;
+import br.com.dockApi.excpetion.WithdrawException;
 
 public interface AccountService {
 
@@ -33,8 +34,10 @@ public interface AccountService {
 	 * @param id account
 	 * @return an account refreshed
 	 * @throws InactiveAccountException
+	 * @throws UnregisteredAccount
 	 */
-	public Account deposit(Long idAccount, BigDecimal value) throws DepositException, InactiveAccountException;
+	public Account deposit(Long idAccount, BigDecimal value)
+			throws DepositException, InactiveAccountException, UnregisteredAccount;
 
 	/**
 	 * Consult balance in account by id
@@ -53,4 +56,31 @@ public interface AccountService {
 	 * @throws DepositException
 	 */
 	public boolean verifyAccountActive(AccountDTO accDto);
+
+	/**
+	 * Business rules to block an account
+	 * 
+	 * @param account id
+	 * @return AccountDto
+	 */
+	public AccountDTO blockAccount(Long id) throws UnregisteredAccount;
+
+	/**
+	 * Business rules active an account
+	 * 
+	 * @param id
+	 * @return AccountDTO
+	 */
+	public AccountDTO activeAccount(Long id) throws UnregisteredAccount;
+
+	/**
+	 * Business rules to withdraw
+	 * 
+	 * @param id
+	 * @return AccountDTO
+	 * @throws UnregisteredAccount
+	 * @throws InactiveAccountException
+	 */
+	public AccountDTO withdraw(Long id, BigDecimal valueWithdraw)
+			throws UnregisteredAccount, InactiveAccountException, WithdrawException;
 }

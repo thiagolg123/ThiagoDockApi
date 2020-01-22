@@ -20,6 +20,7 @@ import br.com.dockApi.excpetion.InactiveAccountException;
 import br.com.dockApi.excpetion.RegisteredAccount;
 import br.com.dockApi.excpetion.UnregisteredAccount;
 import br.com.dockApi.excpetion.UnregisteredPerson;
+import br.com.dockApi.excpetion.WithdrawException;
 import br.com.dockApi.transaction.TransactionService;
 import br.com.dockApi.transaction.TransactionType;
 
@@ -46,7 +47,7 @@ public class AccountControllerV1 {
 	 * 
 	 * @param accForm    form from body
 	 * @param uriBuilder Uri builder
-	 * @return response entity according to cases
+	 * @return response entity according cases
 	 */
 	@PostMapping
 	public ResponseEntity<AccountDTO> createAccount(@RequestBody AccountForm accForm, UriComponentsBuilder uriBuilder) {
@@ -68,19 +69,17 @@ public class AccountControllerV1 {
 	 * 
 	 * @param accForm
 	 * @param uriBuilder
-	 * @return
+	 * @return ResponseEntity
 	 */
 	@PutMapping("/deposit/{id}")
-	public ResponseEntity<AccountDTO> accountDeposit(@PathVariable Long id,
-			@RequestBody ControllAccountBalanceForm refreshAccForm) {
-
+	public ResponseEntity<AccountDTO> accountDeposit(@PathVariable Long id, @RequestBody DepositForm depositForm) {
 		try {
-			BigDecimal valueDeposit = refreshAccForm.getValueDeposit();
+			BigDecimal valueDeposit = depositForm.getValueDeposit();
 			Account account = accountService.deposit(id, valueDeposit);
 			AccountDTO accountDTO = new AccountDTO(account);
 			transactionService.recordTransaction(accountDTO, valueDeposit, TransactionType.DEPOSIT);
 			return ResponseEntity.ok(accountDTO);
-		} catch (DepositException | InactiveAccountException e) {
+		} catch (DepositException | InactiveAccountException | UnregisteredAccount e) {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
@@ -99,9 +98,46 @@ public class AccountControllerV1 {
 
 	}
 
-	// TODO * Implementar path que realiza operação de saque em uma conta;
+	@PutMapping("/withdraw/{id}")
+	public ResponseEntity<AccountDTO> withdraw(@PathVariable Long id, @RequestBody WithdrawForm withdrawForm) {
+		AccountDTO accountDTO = null;
+		try {
+			accountDTO = accountService.withdraw(id, withdrawForm.getValueWithdraw());
+			BigDecimal valueWithDraw = withdrawForm.getValueWithdraw();
+			transactionService.recordTransaction(accountDTO, valueWithDraw, TransactionType.WITHDRAW);
+		} catch (UnregisteredAccount | InactiveAccountException | WithdrawException e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
+		return ResponseEntity.ok(accountDTO);
+	}
 
-	// TODO * Implementar path que realiza o bloqueio de uma conta;
+	@PutMapping("/block/{id}")
+	public ResponseEntity<AccountDTO> blockAccount(@PathVariable Long id) {
+		AccountDTO accountDTO = null;
+		try {
+			accountDTO = accountService.blockAccount(id);
+		} catch (UnregisteredAccount e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
+		return ResponseEntity.ok(accountDTO);
+	}
 
-	// TODO * Implementar path que recupera o extrato de transações de uma conta;
+	@PutMapping("/active/{id}")
+	public ResponseEntity<AccountDTO> activeAccount(@PathVariable Long id) {
+		AccountDTO accountDTO = null;
+		try {
+			accountDTO = accountService.activeAccount(id);
+		} catch (UnregisteredAccount e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
+		return ResponseEntity.ok(accountDTO);
+	}
+
+	@PutMapping("/statement/{id}")
+	public ResponseEntity<AccountDTO> statementAccount(@PathVariable Long id) {
+		return null;
+	}
 }

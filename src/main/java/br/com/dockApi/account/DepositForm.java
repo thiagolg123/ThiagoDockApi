@@ -2,7 +2,7 @@ package br.com.dockApi.account;
 
 import java.math.BigDecimal;
 
-public class ControllAccountBalanceForm {
+public class DepositForm {
 
 	private BigDecimal valueDeposit;
 
