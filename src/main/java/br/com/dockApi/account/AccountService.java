@@ -1,6 +1,7 @@
 package br.com.dockApi.account;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import br.com.dockApi.excpetion.DepositException;
 import br.com.dockApi.excpetion.InactiveAccountException;
@@ -46,7 +47,7 @@ public interface AccountService {
 	 * @return AccountDTO
 	 * @throws InactiveAccountException
 	 */
-	public AccountDTO consultBalance(Long id) throws UnregisteredAccount, InactiveAccountException;
+	public AccountDTO consultBalance(Long idAccount) throws UnregisteredAccount, InactiveAccountException;
 
 	/**
 	 * Verify if account is active
@@ -63,7 +64,7 @@ public interface AccountService {
 	 * @param account id
 	 * @return AccountDto
 	 */
-	public AccountDTO blockAccount(Long id) throws UnregisteredAccount;
+	public AccountDTO blockAccount(Long idAccount) throws UnregisteredAccount;
 
 	/**
 	 * Business rules active an account
@@ -71,7 +72,7 @@ public interface AccountService {
 	 * @param id
 	 * @return AccountDTO
 	 */
-	public AccountDTO activeAccount(Long id) throws UnregisteredAccount;
+	public AccountDTO activeAccount(Long idAccount) throws UnregisteredAccount;
 
 	/**
 	 * Business rules to withdraw
@@ -81,6 +82,15 @@ public interface AccountService {
 	 * @throws UnregisteredAccount
 	 * @throws InactiveAccountException
 	 */
-	public AccountDTO withdraw(Long id, BigDecimal valueWithdraw)
+	public AccountDTO withdraw(Long idAccount, BigDecimal valueWithdraw)
 			throws UnregisteredAccount, InactiveAccountException, WithdrawException;
+
+	/**
+	 * 
+	 * Business rules to statement
+	 * 
+	 * @param idAccount
+	 * @return List<StatementDTO> as statement
+	 */
+	public List<StatementDTO> statement(Long idAccount);
 }

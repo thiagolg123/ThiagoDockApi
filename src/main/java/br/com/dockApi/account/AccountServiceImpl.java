@@ -1,7 +1,10 @@
 package br.com.dockApi.account;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +16,8 @@ import br.com.dockApi.excpetion.UnregisteredPerson;
 import br.com.dockApi.excpetion.WithdrawException;
 import br.com.dockApi.person.Person;
 import br.com.dockApi.person.PersonRepository;
+import br.com.dockApi.transaction.Transaction;
+import br.com.dockApi.transaction.TransactionRepository;
 
 @Service
 public class AccountServiceImpl implements AccountService {
@@ -22,6 +27,9 @@ public class AccountServiceImpl implements AccountService {
 
 	@Autowired
 	private AccountRepository repoAccount;
+
+	@Autowired
+	private TransactionRepository repoTransaction;
 
 	@Autowired
 	private PersonRepository repoPerson;
@@ -111,6 +119,23 @@ public class AccountServiceImpl implements AccountService {
 		return accountDTO;
 	}
 
+	@Override
+	public List<StatementDTO> statement(Long idAccount) {
+		// Como é um teste, sem escala, deixo esse filtro aqui no codigo, demonstrar um
+		// pouco mais :)
+		List<Transaction> transactions = repoTransaction.findAll();
+		List<StatementDTO> listStatementDTO = new ArrayList<StatementDTO>();
+
+		Stream<Transaction> filteredTransactionList = transactions.stream()
+				.filter(transaction -> transaction.getAccountId() == idAccount);
+
+		filteredTransactionList.forEach(transaction -> {
+			listStatementDTO.add(new StatementDTO(transaction));
+		});
+
+		return listStatementDTO;
+	}
+
 	/**
 	 * Concentrate and verify withdraw rules.
 	 * 
@@ -150,7 +175,7 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	/**
-	 * Set state os account block or active
+	 * Set state account block or active
 	 * 
 	 * @param accountId
 	 * @param isActive

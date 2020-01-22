@@ -2,6 +2,8 @@ package br.com.dockApi.account;
 
 import java.math.BigDecimal;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -136,8 +138,13 @@ public class AccountControllerV1 {
 		return ResponseEntity.ok(accountDTO);
 	}
 
-	@PutMapping("/statement/{id}")
-	public ResponseEntity<AccountDTO> statementAccount(@PathVariable Long id) {
-		return null;
+	@GetMapping("/statement/{id}")
+	public ResponseEntity<List<StatementDTO>> statementAccount(@PathVariable Long id) {
+		List<StatementDTO> listOfStatementDTO = new ArrayList<>();
+		listOfStatementDTO = accountService.statement(id);
+		if (listOfStatementDTO.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		}
+		return ResponseEntity.ok(listOfStatementDTO);
 	}
 }
