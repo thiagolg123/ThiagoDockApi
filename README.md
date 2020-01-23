@@ -8,7 +8,8 @@ O que esperamos como escopo mínimo:
 * Implementar path que realiza operação de saque em uma conta;
 * Implementar path que realiza o bloqueio de uma conta;
 * Implementar path que recupera o extrato de transações de uma conta;
-O que será diferencial:
+
+# O que será diferencial:
 
 * Implementar extrato por período;
 * Elaborar manual de execução;
