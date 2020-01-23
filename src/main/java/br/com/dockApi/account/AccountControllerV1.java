@@ -31,7 +31,7 @@ import br.com.dockApi.transaction.TransactionType;
 /**
  * Controller of account resources
  * 
- * @author Thiago Gonçalves
+ * @author Thiago L. Gonçalves
  *
  */
 @RestController
