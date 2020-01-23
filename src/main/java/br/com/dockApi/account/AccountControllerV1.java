@@ -5,6 +5,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,27 +40,23 @@ public class AccountControllerV1 {
 
 	private static final String V1_ACCOUNT_PARAM_ID = "/v1/account/{id}";
 
+	private Logger logger = LoggerFactory.getLogger(AccountControllerV1.class);
+
 	@Autowired
 	private AccountService accountService;
 
 	@Autowired
 	private TransactionService transactionService;
 
-	/**
-	 * Create an account if there is a person
-	 * 
-	 * @param accForm    form from body
-	 * @param uriBuilder Uri builder
-	 * @return response entity according cases
-	 */
 	@PostMapping
 	public ResponseEntity<AccountDTO> createAccount(@RequestBody AccountForm accForm, UriComponentsBuilder uriBuilder) {
 		AccountDTO accDto = null;
 		try {
 			accDto = accountService.createAccount(accForm);
 			accountService.existsAccount(accDto);
+			logger.info("Registred account sucess to: {}", accDto.getPerson().getName());
 		} catch (UnregisteredPerson | RegisteredAccount e) {
-			e.printStackTrace();
+			logger.warn(e.getMessage());
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
 
@@ -66,13 +64,6 @@ public class AccountControllerV1 {
 		return ResponseEntity.created(uri).body(accDto);
 	}
 
-	/**
-	 * Deposit a value in account
-	 * 
-	 * @param accForm
-	 * @param uriBuilder
-	 * @return ResponseEntity
-	 */
 	@PutMapping("/deposit/{id}")
 	public ResponseEntity<AccountDTO> accountDeposit(@PathVariable Long id, @RequestBody DepositForm depositForm) {
 		try {
@@ -80,10 +71,11 @@ public class AccountControllerV1 {
 			Account account = accountService.deposit(id, valueDeposit);
 			AccountDTO accountDTO = new AccountDTO(account);
 			transactionService.recordTransaction(accountDTO, valueDeposit, TransactionType.DEPOSIT);
+			logger.info("Deposit sucess to account: {}", accountDTO.getAccountId());
 			return ResponseEntity.ok(accountDTO);
 		} catch (DepositException | InactiveAccountException | UnregisteredAccount e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+			logger.warn(e.getMessage());
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
 	}
 
@@ -92,9 +84,10 @@ public class AccountControllerV1 {
 		AccountDTO accountDTO = null;
 		try {
 			accountDTO = accountService.consultBalance(id);
+			logger.info("Consult balance to account: {}", accountDTO.getAccountId());
 		} catch (UnregisteredAccount | InactiveAccountException e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+			logger.warn(e.getMessage());
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
 		return ResponseEntity.ok(accountDTO.getBalance());
 
@@ -107,9 +100,10 @@ public class AccountControllerV1 {
 			accountDTO = accountService.withdraw(id, withdrawForm.getValueWithdraw());
 			BigDecimal valueWithDraw = withdrawForm.getValueWithdraw();
 			transactionService.recordTransaction(accountDTO, valueWithDraw, TransactionType.WITHDRAW);
+			logger.info("Withdraw sucess in account: {}", accountDTO.getAccountId());
 		} catch (UnregisteredAccount | InactiveAccountException | WithdrawException e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+			logger.warn(e.getMessage());
+			return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).build();
 		}
 		return ResponseEntity.ok(accountDTO);
 	}
@@ -119,9 +113,10 @@ public class AccountControllerV1 {
 		AccountDTO accountDTO = null;
 		try {
 			accountDTO = accountService.blockAccount(id);
+			logger.info("Block account: {}", accountDTO.getAccountId());
 		} catch (UnregisteredAccount e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+			logger.warn(e.getMessage());
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
 		return ResponseEntity.ok(accountDTO);
 	}
@@ -131,9 +126,10 @@ public class AccountControllerV1 {
 		AccountDTO accountDTO = null;
 		try {
 			accountDTO = accountService.activeAccount(id);
+			logger.info("Active account: {}", accountDTO.getAccountId());
 		} catch (UnregisteredAccount e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+			logger.warn(e.getMessage());
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
 		return ResponseEntity.ok(accountDTO);
 	}
@@ -145,6 +141,7 @@ public class AccountControllerV1 {
 		if (listOfStatementDTO.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
+		logger.info("Execute statement sucess to account: {}", id);
 		return ResponseEntity.ok(listOfStatementDTO);
 	}
 }

@@ -88,7 +88,7 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	public boolean verifyAccountActive(AccountDTO accDto) {
-		return accDto != null && accDto.isActiveFlag();
+		return accDto.isActiveFlag();
 	}
 
 	@Override
@@ -121,8 +121,7 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	public List<StatementDTO> statement(Long idAccount) {
-		// Como é um teste, sem escala, deixo esse filtro aqui no codigo, demonstrar um
-		// pouco mais :)
+		// It´s only a test, ill leave this filter here :)
 		List<Transaction> transactions = repoTransaction.findAll();
 		List<StatementDTO> listStatementDTO = new ArrayList<StatementDTO>();
 

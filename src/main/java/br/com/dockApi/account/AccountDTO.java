@@ -5,6 +5,12 @@ import java.time.LocalDateTime;
 
 import br.com.dockApi.person.Person;
 
+/**
+ * Should be more filtered :S
+ * 
+ * @author Thiago Gonçalves
+ *
+ */
 public class AccountDTO {
 	private Long accountId;
 	private Person person;
@@ -22,6 +28,9 @@ public class AccountDTO {
 		this.dailyWithdrawalLimit = account.getDailyWithdrawalLimit();
 		this.activeFlag = account.isActiveFlag();
 		this.dateCreation = account.getDateCreation();
+	}
+
+	public AccountDTO() {
 	}
 
 	public Long getAccountId() {
