@@ -19,3 +19,17 @@ O que esperamos como escopo mínimo:
 
 Documentação da API, os testes foram executados via postman:
 https://documenter.getpostman.com/view/3327369/SWT8fK2P
+
+# Pré-requisitos
+Maven, java, ferramenta para testes de api.
+
+# Build & Run
+Baixando (clonando) o projeto, rodando com java -jar
+
+## 1. Git Clone
+git clone https://github.com/thiagolg123/ThiagoDockApi.git
+
+## 2. Construindo a parte Java
+mvn package
+java -jar target/dockApi-0.0.1-SNAPSHOT.jar
+Pronto! --> http://localhost:8080/account ...
